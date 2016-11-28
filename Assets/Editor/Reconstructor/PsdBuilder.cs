@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using PhotoshopFile;
 using UnityEditor;
 using UnityEngine;
-using Object = UnityEngine.Object;
+using UnityEngine.UI;
 
 namespace subjectnerdagreement.psdexport
 {
@@ -144,24 +143,50 @@ namespace subjectnerdagreement.psdexport
 				if (lastParent != null)
 					spriteObject.transform.SetParent(lastParent.transform, false);
 
-				// Retrieve sprite from asset database
-				string sprPath = PSDExporter.GetLayerFilename(settings, i);
-				Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(sprPath);
+				Vector2 spritePivot = GetPivot(SpriteAlignment.Center);
+				if (layer.IsText)
+				{
+					var layerText = layer.LayerText;
+					Text text = spriteObject.AddComponent<Text>();
+					text.rectTransform.SetAsFirstSibling();
+					text.rectTransform.sizeDelta = new Vector2(layer.Rect.width, layer.Rect.height);
+					text.text = layerText.Text.Replace("\r\n", "\n").Replace("\r", "\n");
 
-				// Get the pivot settings for the sprite
-				TextureImporter sprImporter = (TextureImporter)AssetImporter.GetAtPath(sprPath);
-				TextureImporterSettings sprSettings = new TextureImporterSettings();
-				sprImporter.ReadTextureSettings(sprSettings);
-				sprImporter = null;
+					FontStyle fontStyle = FontStyle.Normal;
+					if (layerText.FauxBold)
+					{
+						fontStyle |= FontStyle.Bold;
+					}
+					if (layerText.FauxItalic)
+					{
+						fontStyle |= FontStyle.Italic;
+					}
 
-				// Add components to the sprite object for the visuals
-				constructor.AddComponents(i, spriteObject, sprite, sprSettings);
+					float a = ((layerText.FillColor | 0xFF000000L) >> 24) / 255f;
+					float r = ((layerText.FillColor | 0xFF0000L) >> 16) / 255f;
+					float g = ((layerText.FillColor | 0xFF00L) >> 8) / 255f;
+					float b = (layerText.FillColor | 0xFFL) / 255f;
+					text.color = new Color(r, g, b, a);
+				}
+				else
+				{
+					// Retrieve sprite from asset database
+					string sprPath = PSDExporter.GetLayerFilename(settings, i);
+					Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(sprPath);
 
-				Transform spriteT = spriteObject.transform;
+					// Get the pivot settings for the sprite
+					TextureImporter sprImporter = (TextureImporter)AssetImporter.GetAtPath(sprPath);
+					TextureImporterSettings sprSettings = new TextureImporterSettings();
+					sprImporter.ReadTextureSettings(sprSettings);
+					sprImporter = null;
 
-				// Reposition the sprite object according to PSD position
-				Vector2 spritePivot = GetPivot(sprSettings);
+					// Add components to the sprite object for the visuals
+					constructor.AddComponents(i, spriteObject, sprite, sprSettings);
 
+					// Reposition the sprite object according to PSD position
+					spritePivot = GetPivot(sprSettings);
+				}
+				
 				Vector3 layerPos = constructor.GetLayerPosition(layer.Rect, spritePivot, settings.PixelsToUnitSize);
 				// reverse y axis
 				layerPos.y = fileInfo.height - layerPos.y;
@@ -178,8 +203,9 @@ namespace subjectnerdagreement.psdexport
 						break;
 				}
 				layerPos *= posScale;
-				
+
 				// Sprite position is based on root object position initially
+				Transform spriteT = spriteObject.transform;
 				spriteT.position = layerPos;
 			} // End layer loop
 		} // End BuildPsd()

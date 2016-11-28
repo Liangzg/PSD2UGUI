@@ -80,6 +80,11 @@ namespace subjectnerdagreement.psdexport
 		public static Sprite CreateSprite(PsdExportSettings settings, int layerIndex)
 		{
 			var layer = settings.Psd.Layers[layerIndex];
+			if (layer.IsText)
+			{
+				return null;
+			}
+
 			Texture2D tex = CreateTexture(layer);
 			if (tex == null)
 				return null;
