@@ -62,7 +62,7 @@ namespace PhotoshopFile
 			private set;
 		}
 
-		public int FillColor
+		public uint FillColor
 		{
 			get;
 			private set;
@@ -77,8 +77,6 @@ namespace PhotoshopFile
 		{
 			Data = psdReader.ReadBytes((int)dataLength);
 			var reader = new PsdBinaryReader(new System.IO.MemoryStream(Data), psdReader);
-
-			var endPos = reader.BaseStream.Position + dataLength;
 
 			// PhotoShop version
 			reader.ReadUInt16();
@@ -98,10 +96,6 @@ namespace PhotoshopFile
 
 			engineData = (Dictionary<string, object>)TxtDescriptor.Children.Find(c => c.Name == "EngineData").Value;
 			StylesheetReader = new TdTaStylesheetReader(engineData);
-
-			// WarpDescriptor = DynVal.ReadDescriptor(reader); //Warp descriptor
-
-			reader.BaseStream.Position = endPos;
 			
 			Dictionary<string, object> d = StylesheetReader.GetStylesheetDataFromLongestRun();
 			Text = StylesheetReader.Text;

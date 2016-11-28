@@ -21,7 +21,7 @@ namespace PhotoshopFile.Text
         public static string getString(object tree, string selector) { return (string)query(tree, selector); }
         public static bool getBool(object tree, string selector) { return (bool)query(tree, selector); }
 
-		public static int getColor(object tree, string selector)
+		public static uint getColor(object tree, string selector)
 		{
 			//Get the color object
 			Dictionary<string, object> d = getDict(tree, selector);
@@ -29,10 +29,10 @@ namespace PhotoshopFile.Text
 			Debug.Assert((int)d["Type"] == 1);
 			//Get the array of values
 			List<object> values = d["Values"] as List<object>;
-			int color = 0;
+			uint color = 0;
 			for (int i = 0; i < 4; ++i)
 			{
-				color = color * 255 + (int)((double)values[i] * 255);
+				color = color * 256 + (uint)((double)values[i] * 255);
 			}
 			return color;
 		}

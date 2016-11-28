@@ -148,6 +148,10 @@ namespace subjectnerdagreement.psdexport
 				{
 					var layerText = layer.LayerText;
 					Text text = spriteObject.AddComponent<Text>();
+					text.horizontalOverflow = HorizontalWrapMode.Overflow;
+					text.verticalOverflow = VerticalWrapMode.Overflow;
+
+					text.fontSize = (int)layerText.FontSize;
 					text.rectTransform.SetAsFirstSibling();
 					text.rectTransform.sizeDelta = new Vector2(layer.Rect.width, layer.Rect.height);
 					text.text = layerText.Text.Replace("\r\n", "\n").Replace("\r", "\n");
@@ -162,10 +166,10 @@ namespace subjectnerdagreement.psdexport
 						fontStyle |= FontStyle.Italic;
 					}
 
-					float a = ((layerText.FillColor | 0xFF000000L) >> 24) / 255f;
-					float r = ((layerText.FillColor | 0xFF0000L) >> 16) / 255f;
-					float g = ((layerText.FillColor | 0xFF00L) >> 8) / 255f;
-					float b = (layerText.FillColor | 0xFFL) / 255f;
+					float a = ((layerText.FillColor | 0xFF000000U) >> 24) / 255f;
+					float r = ((layerText.FillColor | 0xFF0000U) >> 16) / 255f;
+					float g = ((layerText.FillColor | 0xFF00U) >> 8) / 255f;
+					float b = (layerText.FillColor | 0xFFU) / 255f;
 					text.color = new Color(r, g, b, a);
 				}
 				else
