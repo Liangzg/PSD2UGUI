@@ -129,6 +129,7 @@ namespace PhotoshopFile
 
 		public Layer(PsdFile psdFile)
 		{
+			IsText = false;
 			PsdFile = psdFile;
 			Rect = new Rect();
 			Channels = new ChannelList();
@@ -139,6 +140,7 @@ namespace PhotoshopFile
 		public Layer(PsdBinaryReader reader, PsdFile psdFile)
 		  : this(psdFile)
 		{
+			IsText = false;
 			Rect = reader.ReadRectangle();
 
 			//-----------------------------------------------------------------------

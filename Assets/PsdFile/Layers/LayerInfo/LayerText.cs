@@ -11,6 +11,8 @@ namespace PhotoshopFile
 			get { return "TySh"; }
 		}
 
+		public byte[] Data { get; private set; }
+
 		public Matrix2D Transform;
 		public DynVal TxtDescriptor;
 		public TdTaStylesheetReader StylesheetReader;
@@ -71,8 +73,11 @@ namespace PhotoshopFile
 
 		}
 
-		public LayerText(PsdBinaryReader reader, int dataLength)
+		public LayerText(PsdBinaryReader psdReader, int dataLength)
 		{
+			Data = psdReader.ReadBytes((int)dataLength);
+			var reader = new PsdBinaryReader(new System.IO.MemoryStream(Data), psdReader);
+
 			var endPos = reader.BaseStream.Position + dataLength;
 
 			// PhotoShop version
@@ -135,7 +140,7 @@ namespace PhotoshopFile
 
 		protected override void WriteData(PsdBinaryWriter writer)
 		{
-			throw new NotImplementedException("LayerText.WriteData not implemented!");
+			writer.Write(Data);
 		}
 	}
 }
