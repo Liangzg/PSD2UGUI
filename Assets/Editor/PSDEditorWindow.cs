@@ -36,44 +36,6 @@ namespace subjectnerdagreement.psdexport
 {
 	public class PSDEditorWindow : EditorWindow
 	{
-		#region Static/Menus
-		private static PSDEditorWindow GetPSDEditor()
-		{
-			var wnd = GetWindow<PSDEditorWindow>();
-			wnd.Setup();
-
-			wnd.Show();
-
-			return wnd;
-		}
-
-		[MenuItem("Assets/PSD Importer")]
-		static void ImportPsdWindow()
-		{
-			var window = GetPSDEditor();
-
-			if (PsdAssetSelected)
-			{
-				window.Image = (Texture2D)Selection.objects[0];
-				EditorUtility.SetDirty(window);
-			}
-		}
-
-		public static bool PsdAssetSelected
-		{
-			get
-			{
-				Object[] arr = Selection.objects;
-
-				if (arr.Length != 1)
-					return false;
-
-				string assetPath = AssetDatabase.GetAssetPath(arr[0]);
-				return assetPath.ToUpper().EndsWith(".PSD");
-			}
-		}
-		#endregion
-
 		private static string[] _sortingLayerNames;
 
 		private PsdExportSettings settings;
@@ -102,6 +64,55 @@ namespace subjectnerdagreement.psdexport
 				LoadImage();
 			}
 		}
+
+		#region Static/Menus
+		private static PSDEditorWindow GetPSDEditor()
+		{
+			var wnd = GetWindow<PSDEditorWindow>();
+			wnd.Setup();
+
+			wnd.Show();
+
+			return wnd;
+		}
+
+		[MenuItem("Assets/PSD Importer")]
+		static void ImportPsdWindow()
+		{
+			var window = GetPSDEditor();
+
+			if (PsdAssetSelected)
+			{
+				window.Image = (Texture2D)Selection.objects[0];
+				EditorUtility.SetDirty(window);
+			}
+			else
+			{
+				var psdPath = EditorUtility.OpenFilePanel("请选择PSD文件", PsdSetting.Instance.PsdPath, "psd");
+				if (string.IsNullOrEmpty(psdPath))
+				{
+					return;
+				}
+
+				window.LoadPsdFile(psdPath);
+				EditorUtility.SetDirty(window);
+			}
+		}
+
+		public static bool PsdAssetSelected
+		{
+			get
+			{
+				Object[] arr = Selection.objects;
+
+				if (arr.Length != 1)
+					return false;
+
+				string assetPath = AssetDatabase.GetAssetPath(arr[0]);
+				return assetPath.ToUpper().EndsWith(".PSD");
+			}
+		}
+		#endregion
 
 		void OnEnable()
 		{
@@ -155,6 +166,22 @@ namespace subjectnerdagreement.psdexport
 		private bool LoadImage()
 		{
 			settings = new PsdExportSettings(image);
+			showImportSettings = !settings.HasMetaData;
+
+			bool valid = (settings.Psd != null);
+			if (valid)
+			{
+				// Parse the layer info
+				fileInfo = new PsdFileInfo(settings.Psd);
+				settings.LoadLayers(fileInfo);
+			}
+			return valid;
+		}
+
+		private bool LoadPsdFile(string psdPath)
+		{
+			settings = new PsdExportSettings(psdPath);
+
 			showImportSettings = !settings.HasMetaData;
 
 			bool valid = (settings.Psd != null);
@@ -235,7 +262,7 @@ namespace subjectnerdagreement.psdexport
 		{
 			SetupStyles();
 
-			imageLoaded = (image != null && settings.Psd != null);
+			imageLoaded = (settings != null && settings.Psd != null);
 
 			// Draw the layers, store where the layer groups are
 			groupRects = DrawPsdLayers();
@@ -675,7 +702,7 @@ namespace subjectnerdagreement.psdexport
 			{
 				string psdString = "PSD File";
 				if (imageLoaded)
-					psdString = image.name;
+					psdString = settings.Filename;
 
 				EditorGUI.BeginChangeCheck();
 				var img = (Texture2D)EditorGUILayout.ObjectField(psdString, image,
@@ -757,7 +784,7 @@ namespace subjectnerdagreement.psdexport
 			string path = EditorUtility.SaveFolderPanel("Export Path", settings.ExportPath, "");
 			if (string.IsNullOrEmpty(path))
 			{
-				settings.ExportPath = "";
+				settings.ExportPath = PsdSetting.Instance.DefaultImportPath;
 			}
 			else
 			{

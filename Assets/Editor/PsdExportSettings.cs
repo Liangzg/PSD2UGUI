@@ -47,6 +47,10 @@ namespace subjectnerdagreement.psdexport
 		/// </summary>
 		public string Filename { get; protected set; }
 		/// <summary>
+		/// Full filename of the PSD
+		/// </summary>
+		public string FullFileName { get; protected set; }
+		/// <summary>
 		/// Unity Texture2D reference to the PSD
 		/// </summary>
 		public Texture2D Image { get; protected set; }
@@ -120,6 +124,9 @@ namespace subjectnerdagreement.psdexport
 			if (!path.ToUpper().EndsWith(".PSD"))
 				return;
 
+			FullFileName = path;
+			ExportPath = PsdSetting.Instance.DefaultImportPath;
+
 			Psd = new PsdFile(path, Encoding.Default);
 			Filename = Path.GetFileNameWithoutExtension(path);
 			Image = image;
@@ -129,6 +136,22 @@ namespace subjectnerdagreement.psdexport
 			PixelsToUnitSize = 100f;
 
 			LoadMetaData();
+		}
+
+		public PsdExportSettings(string path)
+		{
+			if (!path.ToUpper().EndsWith(".PSD"))
+				return;
+
+			FullFileName = path;
+			ExportPath = PsdSetting.Instance.DefaultImportPath;
+
+			Psd = new PsdFile(path, Encoding.Default);
+			Filename = Path.GetFileNameWithoutExtension(path);
+
+			ScaleBy = 0;
+			Pivot = SpriteAlignment.Center;
+			PixelsToUnitSize = 100f;
 		}
 
 		private void LoadMetaData()
@@ -283,6 +306,12 @@ namespace subjectnerdagreement.psdexport
 
 		public void SaveLayerMetaData()
 		{
+			if (Image == null)
+			{
+				Debug.LogWarning("Layer import from psd outside assets!");
+				return;
+			}
+
 			foreach (var keypair in layerSettings)
 			{
 				SaveLayerSetting(keypair.Value);
@@ -338,7 +367,7 @@ namespace subjectnerdagreement.psdexport
 
 		public string GetLayerPath(string layerName)
 		{
-			string assetPath = AssetDatabase.GetAssetPath(Image);
+			string assetPath = FullFileName;
 			string directoryPath = Path.GetDirectoryName(assetPath);
 			
 			string layerFile = Path.GetFileNameWithoutExtension(assetPath);
@@ -350,6 +379,10 @@ namespace subjectnerdagreement.psdexport
 			if (hasExportPath)
 			{
 				string basePath = string.Format("Assets/{0}", ExportPath);
+				if (!Directory.Exists(basePath))
+				{
+					Directory.CreateDirectory(basePath);
+				}
 				string imgPath = string.Format("{0}.png", layerName);
 				layerPath = Path.Combine(basePath, imgPath);
 			}
