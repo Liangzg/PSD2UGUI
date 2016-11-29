@@ -306,12 +306,6 @@ namespace subjectnerdagreement.psdexport
 
 		public void SaveLayerMetaData()
 		{
-			if (Image == null)
-			{
-				Debug.LogWarning("Layer import from psd outside assets!");
-				return;
-			}
-
 			foreach (var keypair in layerSettings)
 			{
 				SaveLayerSetting(keypair.Value);

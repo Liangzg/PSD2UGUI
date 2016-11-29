@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 namespace subjectnerdagreement.psdexport
 {
@@ -32,10 +33,17 @@ namespace subjectnerdagreement.psdexport
 			SerializedProperty defaultImportPath = serializedObject.FindProperty("m_DefaultImportPath");
 			if (GUILayout.Button("Default Import Path"))
 			{
-				var path = EditorUtility.SaveFolderPanel("Default import path", m_PsdSetting.DefaultImportPath, string.Empty);
+				var path = EditorUtility.SaveFolderPanel("Default import path", 
+					Path.Combine(Application.dataPath, m_PsdSetting.DefaultImportPath), string.Empty);
+
 				if (path.StartsWith(Application.dataPath))
 				{
-					defaultImportPath.stringValue = path.Substring(Application.dataPath.Length + 1);
+					var startLen = Mathf.Min(Application.dataPath.Length + 1, path.Length);
+					defaultImportPath.stringValue = path.Substring(startLen);
+				}
+				else
+				{
+					Debug.LogWarning("Not support path out of Application.dataPath.");
 				}
 			}
 			defaultImportPath.stringValue = GUILayout.TextArea(defaultImportPath.stringValue);

@@ -23,6 +23,7 @@ THE SOFTWARE.
 */
 
 using System;
+using System.IO;
 using System.Reflection;
 using PhotoshopFile;
 using System.Collections.Generic;
@@ -781,7 +782,9 @@ namespace subjectnerdagreement.psdexport
 
 		private void PickExportPath()
 		{
-			string path = EditorUtility.SaveFolderPanel("Export Path", settings.ExportPath, "");
+			string path = EditorUtility.SaveFolderPanel("Export Path", 
+				Path.Combine(Application.dataPath, settings.ExportPath), "");
+
 			if (string.IsNullOrEmpty(path))
 			{
 				settings.ExportPath = PsdSetting.Instance.DefaultImportPath;
