@@ -137,7 +137,8 @@ namespace subjectnerdagreement.psdexport
 				Layer layer = settings.Psd.Layers[i];
 
 				// Create the game object for the sprite
-				GameObject spriteObject = constructor.CreateGameObject(layer.Name, lastParent);
+				string layerName = Utility.PinYinHelper.Convert(layer.Name);
+				GameObject spriteObject = constructor.CreateGameObject(layerName, lastParent);
 
 				// Reparent created object to last parent
 				if (lastParent != null)
@@ -221,7 +222,8 @@ namespace subjectnerdagreement.psdexport
 		{
 			if (startGroup)
 			{
-				GameObject groupRoot = constructor.CreateGameObject(groupInfo.name, lastParent);
+				string groupName = Utility.PinYinHelper.Convert(groupInfo.name);
+				GameObject groupRoot = constructor.CreateGameObject(groupName, lastParent);
 				constructor.HandleGroupOpen(groupRoot);
 
 				lastParent = groupRoot;
